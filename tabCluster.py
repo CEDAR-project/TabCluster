@@ -34,6 +34,13 @@ class TabCluster:
         for result in results["results"]["bindings"]:
             self.log.debug(result["dimlabel"]["value"])
 
+        ###
+
+        fo = open('input', 'r')
+        self.wordList = fo.readlines()
+
+        
+
     def URIzeString(self, __nonuri):
         return urllib.quote(re.sub('\s|\(|\)|,|\.','_',unicode(__nonuri).strip()).encode('utf-8', 'ignore'))
     

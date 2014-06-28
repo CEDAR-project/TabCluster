@@ -3,6 +3,9 @@
 import argparse
 import logging
 import re
+import numpy as np
+import scipy.cluster.hierarchy
+from Levenshtein import ratio
 from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import Namespace, RDF, SKOS
 from SPARQLWrapper import SPARQLWrapper, JSON
@@ -39,7 +42,21 @@ class TabCluster:
         fo = open('input', 'r')
         self.wordList = fo.readlines()
 
-        
+    def computeClusters(self):
+        self.simMatrix = []
+        # for i in range(len(self.wordList)):
+        #     self.simMatrix.append([])
+        #     for j in range(len(self.wordList)):
+        #         self.simMatrix[i].append(self.distance((i,j)))
+
+        print self.simMatrix       
+        upperIndices = np.triu_indices(len(self.wordList), 1)
+        upperTriangle = np.apply_along_axis(self.distance, 0, upperIndices)
+        print scipy.cluster.hierarchy.linkage(upperTriangle)
+
+    def distance(self, coord):
+        i, j = coord
+        return 1 - ratio(self.wordList[i], self.wordList[j])
 
     def URIzeString(self, __nonuri):
         return urllib.quote(re.sub('\s|\(|\)|,|\.','_',unicode(__nonuri).strip()).encode('utf-8', 'ignore'))
@@ -68,5 +85,6 @@ if __name__ == "__main__":
 
     logging.info('Initializing...')
     tabCluster = TabCluster(args.endpoint, logLevel)
+    tabCluster.computeClusters()
 
     logging.info('Done.')

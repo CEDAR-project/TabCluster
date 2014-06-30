@@ -41,6 +41,7 @@ class TabCluster:
 
         fo = open('input', 'r')
         self.wordList = fo.readlines()
+        self.log.debug('Word list contains %s items' % len(self.wordList))
 
     def computeClusters(self):
         self.simMatrix = []
@@ -52,7 +53,24 @@ class TabCluster:
         print self.simMatrix       
         upperIndices = np.triu_indices(len(self.wordList), 1)
         upperTriangle = np.apply_along_axis(self.distance, 0, upperIndices)
-        print scipy.cluster.hierarchy.linkage(upperTriangle)
+        self.cluster = scipy.cluster.hierarchy.linkage(upperTriangle)
+        self.log.debug(self.cluster)
+
+
+    def layoutClusters(self):
+        tree = {}
+        clusterIndex = len(self.wordList) + 1
+        for i in self.cluster:
+            indexA = int(i[0])
+            indexB = int(i[1])
+            elemA = self.wordList[indexA] if indexA < len(self.wordList) else indexA
+            elemB = self.wordList[indexB] if indexB < len(self.wordList) else indexB
+            tree[clusterIndex] = []
+            tree[clusterIndex].append(elemA)
+            tree[clusterIndex].append(elemB)
+            clusterIndex += 1
+        dendogram = scipy.cluster.hierarchy.dendrogram(self.cluster)
+            
 
     def distance(self, coord):
         i, j = coord
@@ -86,5 +104,6 @@ if __name__ == "__main__":
     logging.info('Initializing...')
     tabCluster = TabCluster(args.endpoint, logLevel)
     tabCluster.computeClusters()
+    tabCluster.layoutClusters()
 
     logging.info('Done.')

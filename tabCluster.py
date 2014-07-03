@@ -6,6 +6,7 @@ import re
 import numpy as np
 import scipy.cluster.hierarchy
 import codecs
+import pprint
 from time import sleep
 from Levenshtein import ratio
 from rdflib import Graph, Namespace, Literal, URIRef
@@ -26,9 +27,10 @@ class TabCluster:
         self.clusterDistance = {} # Distances between clusters
         self.clustersToLabel = [] # Clusters to label acc SciPy criteria
         self.clusterTags = {} # Tags given to each cluster to label
+        self.clustersDict = {} # Keys = cluster ids, values = cluster values
 
         # Data load
-        fo = codecs.open('input', encoding='utf-8')
+        fo = codecs.open('data/input-religions', encoding='utf-8')
         self.wordList = list(set(fo.read().splitlines()))
         self.log.debug('Word list contains %s items' % len(self.wordList))
 
@@ -38,6 +40,7 @@ class TabCluster:
 
         self.clustersUnderThreshold(self.root, self.clustersToLabel,  0.7*max(self.clusterDistance.values()))
 
+        self.computeClustersDict()
 
     def computeClusters(self):
         upperIndices = np.triu_indices(len(self.wordList), 1)
@@ -71,6 +74,21 @@ class TabCluster:
         else:
             self.clustersUnderThreshold(self.tree[node][0], bag, t)
             self.clustersUnderThreshold(self.tree[node][1], bag, t)
+
+    def computeClustersDict(self):
+        for b in self.clustersToLabel:
+            bag = []
+            self.getTreeElems(b, bag)
+            self.clustersDict[b] = bag
+        for w in self.wordList:
+            if w not in [item for sublist in self.clustersDict.values() for item in sublist]:
+                for k, v in self.tree.iteritems():
+                    for term in v:
+                        if w == term:
+                            if k not in self.clustersDict:
+                                self.clustersDict[k] = [w]
+                            else:
+                                self.clustersDict[k].append(w)
 
     def tagsByPopularTerm(self):
         clusterRepresentative = {}
@@ -166,6 +184,14 @@ class TabCluster:
             clusterRepresentative = max(bagSupers.iterkeys(), key=(lambda key: bagSupers[key]))
             print clusterRepresentative
 
+    def printClustersAsCSV(self):
+        # pp = pprint.PrettyPrinter(indent=4)
+        # pp.pprint(self.clustersDict)
+        for k, v in self.clustersDict.iteritems():
+            for w in v:
+                print w, ",", k
+        
+
     def layoutClusters(self):
         dendogram = scipy.cluster.hierarchy.dendrogram(self.cluster)
 
@@ -209,6 +235,7 @@ if __name__ == "__main__":
     tabCluster = TabCluster(args.endpoint, logLevel)
     # print tabCluster.clustersToLabel
     # tabCluster.tagsByPopularTerm()
-    tabCluster.tagsByPopularCategory()
+    # tabCluster.tagsByPopularCategory()
+    tabCluster.printClustersAsCSV()
 
     logging.info('Done.')

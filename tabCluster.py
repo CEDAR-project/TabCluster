@@ -207,8 +207,8 @@ if __name__ == "__main__":
 
     logging.info('Initializing...')
     tabCluster = TabCluster(args.endpoint, logLevel)
-    print tabCluster.clustersToLabel
-    tabCluster.tagsByPopularTerm()
+    # print tabCluster.clustersToLabel
+    # tabCluster.tagsByPopularTerm()
     tabCluster.tagsByPopularCategory()
 
     logging.info('Done.')

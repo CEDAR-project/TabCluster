@@ -53,6 +53,3 @@
 
     <div class="container">
 
-	<h1>TabCluster</h1>
-	<h2>Classification schemes from flat lists. Delivered.</h2>
-

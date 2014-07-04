@@ -16,7 +16,17 @@ def version():
 @route('/tabcluster')
 @route('/tabcluster/')
 def harmonize():
-    return template('harm')
+    return template('tabcluster')
+
+@route('/tabcluster/inputdata/')
+def inputdata():
+    return template('inputdata')
+
+
+@route('/tabcluster/process/', method = 'POST')
+def process():
+    print request.forms.get("query"), request.forms.get("endpoint")
+
 
 @route('/tabcluster/vocab')
 def vocab():
